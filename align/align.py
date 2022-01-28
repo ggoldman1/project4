@@ -176,8 +176,8 @@ class NeedlemanWunsch:
         Return:
             Tuple
                 Maximum element from above
-                Which element contained max element {0: align, 1: gapA, 2: gapB}
-                Which entry in the element contained the max element
+                Which matrix contained max element {0: align, 1: gapA, 2: gapB}
+                Which entry in the matrix contained the max element
 
         """
         if align > gapA and align > gapB:
@@ -205,8 +205,8 @@ class NeedlemanWunsch:
         Returns:
             Tuple
                 Maximum element from above
-                Which element contained max element {0: align, 1: gapA, 2: gapB}
-                Which entry in the element contained the max element
+                Which matrix contained max element {0: align, 1: gapA, 2: gapB}
+                Which entry in the matrix contained the max element
         """
         align = self._align_matrix[i-1, j-1]
         gapA = self._gapA_matrix[i-1, j-1]
@@ -233,8 +233,8 @@ class NeedlemanWunsch:
         Returns:
             Tuple
                 Maximum element from above
-                Which element contained max element {0: align, 1: gapA, 2: gapB}
-                Which entry in the element contained the max element
+                Which matrix contained max element {0: align, 1: gapA, 2: gapB}
+                Which entry in the matrix contained the max element
         """
         align = self.gap_open + self.gap_extend + self._align_matrix[i, j-1]
         gapA = self.gap_extend + self._gapA_matrix[i, j-1]
@@ -261,8 +261,8 @@ class NeedlemanWunsch:
         Returns:
             Tuple
                 Maximum element from above
-                Which element contained max element {0: align, 1: gapA, 2: gapB}
-                Which entry in the element contained the max element
+                Which matrix contained max element {0: align, 1: gapA, 2: gapB}
+                Which entry in the matrix contained the max element
         """
         align = self.gap_open + self.gap_extend + self._align_matrix[i-1, j]
         gapA = self.gap_open + self.gap_extend + self._gapA_matrix[i-1, j]
@@ -279,6 +279,14 @@ class NeedlemanWunsch:
         score, the seqA alignment and the seqB alignment respectively.
         """
         # Implement this method based upon the heuristic chosen in the align method above.
+        row = len(seqA) + 1
+        col = len(seqB) + 1
+
+
+    def _backtrace_helper(self, i: int, j: int) -> Tuple
+        """
+        
+        """
         pass
 
 
