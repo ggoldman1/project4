@@ -144,15 +144,15 @@ class NeedlemanWunsch:
 
                 max_align = self._max_step_align(row, col)
                 self._align_matrix[row, col] = self.sub_dict[(seqA[row-1], seqB[col-1])] + max_align[0]
-                self._back = max_align[1], max_align[2] # store the matrix and the element
+                self._back[row, col] = max_align[1], max_align[2] # store the matrix and the element
 
                 max_gapA = self._max_step_gapA(row, col)
                 self._gapA_matrix[row, col] = max_gapA[0]
-                self._back_A = max_gapA[1], max_gapA[2]
+                self._backA[row, col] = max_gapA[1], max_gapA[2]
 
                 max_gapB = self._max_step_gapB(row, col)
                 self._gapB_matrix[row, col] = max_gapB[0]
-                self._back_B = max_gapB[1], max_gapB[2]
+                self._backB[row, col] = max_gapB[1], max_gapB[2]
 
         return self._backtrace()
 
@@ -182,7 +182,7 @@ class NeedlemanWunsch:
         """
         if align > gapA and align > gapB:
             return (align, 0, (i-1, j-1))
-        elif gapA > align and gapA > gapB:
+        elif gapA > gapB:
             return (gapA, 1, (i-1, j-1))
         return (gapB, 2, (i-1, j-1))
 
@@ -279,15 +279,58 @@ class NeedlemanWunsch:
         score, the seqA alignment and the seqB alignment respectively.
         """
         # Implement this method based upon the heuristic chosen in the align method above.
-        row = len(seqA) + 1
-        col = len(seqB) + 1
+        curr_row = len(self._seqA)
+        curr_col = len(self._seqB)
 
+        align_val = self._align_matrix[curr_row, curr_col]
+        gapA_val = self._gapA_matrix[curr_row, curr_col]
+        gapB_val = self._gapB_matrix[curr_row, curr_col]
 
-    def _backtrace_helper(self, i: int, j: int) -> Tuple
+        if align_val > gapA_val and align_val > gapB_val:
+            curr_mat = 0
+        elif gapA_val > gapB_val:
+            curr_mat = 1
+        else:
+            curr_mat = 2
+
+        while curr_row > 1 or curr_col > 1:
+            print(self.seqA_align, self.seqB_align)
+            # cur_vals = curr_mat[curr_row, curr_col]
+            curr_mat, curr_row, curr_col = self._backtrace_sequence_appender(curr_mat, curr_row, curr_col)
+            print(curr_row, curr_col)
+
+        return self._align_matrix[-1, -1], self.seqA_align, self.seqB_align
+
+    def _backtrace_sequence_appender(self, back_mat: int, i: int, j: int) -> Tuple:
         """
+        Updates the sequence alignments depending on the matrix (ie append or gap). 
         
+        Parameters:
+            back_mat: int
+                Either a 0 (align), 1 (gap A), or 2 (gap B)
+            i: int 
+                Current spot in seq A
+            j: int 
+                Current spot in seq B
+
+        Returns:
+            Tuple
+                Next back mat (either 0, 1, or 2), and updated i and j.
         """
-        pass
+        if back_mat == 0:
+            self.seqA_align = self._seqA[i-1] + self.seqA_align
+            self.seqB_align = self._seqB[j-1] + self.seqB_align
+            return self._back_dict[0][1], self._back_dict[0][2][0], self._back_dict[0][2][1]
+
+        elif back_mat == 1:
+            self.seqA_align = '-' + self.seqA_align
+            self.seqB_align = self._seqB[j-1] + self.seqB_align
+            return self._back_dict[1][1], self._back_dict[1][2][0], self._back_dict[1][2][1]
+
+        self.seqA_align = self._seqA[i-1] + self.seqA_align
+        self.seqB_align = '-' + self.seqB_align
+        return self._back_dict[2][1], self._back_dict[2][2][0], self._back_dict[2][2][1]
+
 
 
 def read_fasta(fasta_file: str) -> Tuple[str, str]:
