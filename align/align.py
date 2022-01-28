@@ -100,13 +100,14 @@ class NeedlemanWunsch:
 
     def align(self, seqA: str, seqB: str) -> Tuple[float, str, str]:
         """
-        # TODO: Fill in the Needleman-Wunsch Algorithm below
-        to perform global sequence alignment of seqA and seqB
-        and return a tuple with the following format
-        (alignment score, seqA alignment, seqB alignment)
-        Also, write up a docstring for this function using the
-        _read_sub_matrix as an example.
-        Don't forget to comment your code!
+        Implementation of Needleman-Wunsch algorithm, which generates an alignment between two sequences using dynamic
+        programming.
+
+        Parameters:
+            seqA: str
+                This is the first sequence we consider when aligning
+            seqB: str
+                This is the second sequence we consider when aligning
         """
         # Initialize 6 matrix private attributes for use in alignment
         # create matrices for alignment scores and gaps
@@ -142,49 +143,19 @@ class NeedlemanWunsch:
         for row in range(1, self._align_matrix.shape[0]):
             for col in range(1, self._align_matrix.shape[1]):
 
-                max_align = self._max_step_align(row, col)
+                max_align = self._max_step_align(row, col) # get the max of the three options
                 self._align_matrix[row, col] = self.sub_dict[(seqA[row-1], seqB[col-1])] + max_align[0]
-                self._back[row, col] = max_align[1], max_align[2] # store the matrix and the element
+                self._back[row, col] = max_align[1] # point to the matrix containing max element
 
-                max_gapA = self._max_step_gapA(row, col)
+                max_gapA = self._max_step_gapA(row, col) # get the max of the three options
                 self._gapA_matrix[row, col] = max_gapA[0]
-                self._backA[row, col] = max_gapA[1], max_gapA[2]
+                self._back_A[row, col] = max_gapA[1] # point to the matrix containing max element
 
-                max_gapB = self._max_step_gapB(row, col)
+                max_gapB = self._max_step_gapB(row, col) # get the max of the three options
                 self._gapB_matrix[row, col] = max_gapB[0]
-                self._backB[row, col] = max_gapB[1], max_gapB[2]
+                self._back_B[row, col] = max_gapB[1] # point to the matrix containing max element
 
         return self._backtrace()
-
-    def _get_max(self, align: int, gapA: int, gapB, i: int, j: int) -> Tuple:
-        """
-        Helper method for filling in matrices. Gets max of three elements, and returns the matrix (and coordinates)
-        containing the max value.
-
-        Parameters:
-            align: int
-                Alignment option
-            gapA: int
-                GapA option
-            gapB: int
-                GapB option
-            i: int
-                Current row
-            j: int
-                Current column
-
-        Return:
-            Tuple
-                Maximum element from above
-                Which matrix contained max element {0: align, 1: gapA, 2: gapB}
-                Which entry in the matrix contained the max element
-
-        """
-        if align > gapA and align > gapB:
-            return (align, 0, (i-1, j-1))
-        elif gapA > gapB:
-            return (gapA, 1, (i-1, j-1))
-        return (gapB, 2, (i-1, j-1))
 
     def _max_step_align(self, i: int, j: int) -> Tuple:
         """
@@ -206,7 +177,6 @@ class NeedlemanWunsch:
             Tuple
                 Maximum element from above
                 Which matrix contained max element {0: align, 1: gapA, 2: gapB}
-                Which entry in the matrix contained the max element
         """
         align = self._align_matrix[i-1, j-1]
         gapA = self._gapA_matrix[i-1, j-1]
@@ -218,11 +188,12 @@ class NeedlemanWunsch:
         """
         Helper method for filling in gapA[i,j], ie calculates
             -----------
-            | gap_start + gap_extent + M[i, j-1]
+            | gap_start + gap_extend + M[i, j-1]
         max | gap_extend + gapA[i, j-1]
             | gap_start + gap_extend + gapB[i, j-1]
             -----------
-        It also returns which matrix and which element within the matrix contained the maximum element, for back tracing.
+        It also returns which matrix and which element within the matrix contained the maximum element,
+        for back tracing.
 
         Parameters:
             i: int
@@ -234,7 +205,6 @@ class NeedlemanWunsch:
             Tuple
                 Maximum element from above
                 Which matrix contained max element {0: align, 1: gapA, 2: gapB}
-                Which entry in the matrix contained the max element
         """
         align = self.gap_open + self.gap_extend + self._align_matrix[i, j-1]
         gapA = self.gap_extend + self._gapA_matrix[i, j-1]
@@ -246,7 +216,7 @@ class NeedlemanWunsch:
         """
         Helper method for filling in gapB[i,j], ie calculates
             -----------
-            | gap_start + gap_extent + M[i-1, j]
+            | gap_start + gap_extend + M[i-1, j]
         max | gap_start + gap_extend + gapA[i-1, j]
             | gap_extend + gapB[i-1, j]
             -----------
@@ -262,7 +232,6 @@ class NeedlemanWunsch:
             Tuple
                 Maximum element from above
                 Which matrix contained max element {0: align, 1: gapA, 2: gapB}
-                Which entry in the matrix contained the max element
         """
         align = self.gap_open + self.gap_extend + self._align_matrix[i-1, j]
         gapA = self.gap_open + self.gap_extend + self._gapA_matrix[i-1, j]
@@ -270,22 +239,55 @@ class NeedlemanWunsch:
 
         return self._get_max(align, gapA, gapB, i, j)
 
+    def _get_max(self, align: int, gapA: int, gapB, i: int, j: int) -> Tuple:
+        """
+        Helper method for filling in matrices. Gets max of three elements, and returns the matrix number
+        (see `self._back_dict`).
+
+        Parameters:
+            align: int
+                Alignment option
+            gapA: int
+                GapA option
+            gapB: int
+                GapB option
+            i: int
+                Current row
+            j: int
+                Current column
+
+        Return:
+            Tuple
+                Maximum element from above
+                Which matrix contained max element {0: align, 1: gapA, 2: gapB}
+        """
+        if align > gapA and align > gapB:
+            return (align, 0)
+        elif gapA > gapB:
+            return (gapA, 1)
+        return (gapB, 2)
 
     def _backtrace(self) -> Tuple[float, str, str]:
         """
-        # TODO Implement the traceback procedure method below
-        based on the heuristic you implement in the align method.
-        The traceback method should return a tuple of the alignment
-        score, the seqA alignment and the seqB alignment respectively.
+        Constructs the alignment of the two sequences by traversing through the three pointer matrices, each iteration
+        deciding whehter to align the sequences or add a gap character.
+
+        Returns:
+            Tuple
+                Alignment score
+                Alignment representation of sequence A
+                Alignment representation of sequence B
         """
         # Implement this method based upon the heuristic chosen in the align method above.
         curr_row = len(self._seqA)
         curr_col = len(self._seqB)
 
+        # get bottom right value in each matrix
         align_val = self._align_matrix[curr_row, curr_col]
         gapA_val = self._gapA_matrix[curr_row, curr_col]
         gapB_val = self._gapB_matrix[curr_row, curr_col]
 
+        # find out which matrix had the max value, keep track of that matrix
         if align_val > gapA_val and align_val > gapB_val:
             curr_mat = 0
         elif gapA_val > gapB_val:
@@ -293,11 +295,10 @@ class NeedlemanWunsch:
         else:
             curr_mat = 2
 
-        while curr_row > 1 or curr_col > 1:
-            print(self.seqA_align, self.seqB_align)
-            # cur_vals = curr_mat[curr_row, curr_col]
+        # iterate over the characters, deciding when to align or gap until finished
+        while curr_row > 0 or curr_col > 0:
+            # curr_row and curr_col will decrease depending on how we gap/align
             curr_mat, curr_row, curr_col = self._backtrace_sequence_appender(curr_mat, curr_row, curr_col)
-            print(curr_row, curr_col)
 
         return self._align_matrix[-1, -1], self.seqA_align, self.seqB_align
 
@@ -317,20 +318,23 @@ class NeedlemanWunsch:
             Tuple
                 Next back mat (either 0, 1, or 2), and updated i and j.
         """
-        if back_mat == 0:
-            self.seqA_align = self._seqA[i-1] + self.seqA_align
-            self.seqB_align = self._seqB[j-1] + self.seqB_align
-            return self._back_dict[0][1], self._back_dict[0][2][0], self._back_dict[0][2][1]
+        if back_mat == 0: # if we are aligning at this step
+            self.seqA_align = self._seqA[i-1] + self.seqA_align # add a letter
+            self.seqB_align = self._seqB[j-1] + self.seqB_align # add a letter
+            # return the previous matrix (stored in align_mat), move back diagonal
+            return self._back_dict[0][i,j], i-1, j-1
 
-        elif back_mat == 1:
-            self.seqA_align = '-' + self.seqA_align
-            self.seqB_align = self._seqB[j-1] + self.seqB_align
-            return self._back_dict[1][1], self._back_dict[1][2][0], self._back_dict[1][2][1]
+        elif back_mat == 1: # if we are gapping sequence A
+            self.seqA_align = '-' + self.seqA_align # add a gap character to sequence A
+            self.seqB_align = self._seqB[j-1] + self.seqB_align # add letter to sequence B
+            # return the previous matrix (stored in gapA), move up one row
+            return self._back_dict[1][i,j], i, j-1
 
-        self.seqA_align = self._seqA[i-1] + self.seqA_align
-        self.seqB_align = '-' + self.seqB_align
-        return self._back_dict[2][1], self._back_dict[2][2][0], self._back_dict[2][2][1]
-
+        # if we are gapping at sequence B
+        self.seqA_align = self._seqA[i-1] + self.seqA_align # add letter to sequence A
+        self.seqB_align = '-' + self.seqB_align # add a gap character to sequence be
+        # return the previous matrix (stored in gapB), move left one column
+        return self._back_dict[2][i,j], i-1, j
 
 
 def read_fasta(fasta_file: str) -> Tuple[str, str]:
