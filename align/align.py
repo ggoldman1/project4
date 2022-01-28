@@ -118,6 +118,8 @@ class NeedlemanWunsch:
         self._back = np.ones((len(seqA) + 1, len(seqB) + 1)) * -np.inf
         self._back_A = np.ones((len(seqA) + 1, len(seqB) + 1)) * -np.inf
         self._back_B = np.ones((len(seqA) + 1, len(seqB) + 1)) * -np.inf
+        # number each `back` matrix for ease of use
+        self._back_dict = {0: self._back, 1: self._back_A, 2: self._back_B}
 
         # Resetting alignment in case method is called more than once
         self.seqA_align = ""
@@ -130,10 +132,144 @@ class NeedlemanWunsch:
         self._seqA = seqA
         self._seqB = seqB
 
-        # TODO Implement the global sequence alignment here
-        pass
+        #### NEEDLEMAN-WUNSCH IMPLEMENTATION ####
+        # Begin with base cases
+        self._align_matrix[0,0] = 0
+        self._gapA_matrix[:,0] = [self.gap_open + (i+1)*self.gap_extend for i in range(len(seqA) + 1)]
+        self._gapB_matrix[0,:] = [self.gap_open + (i+1)*self.gap_extend for i in range(len(seqB) + 1)]
+
+        # Now, fill in the "interior" of each matrix
+        for row in range(1, self._align_matrix.shape[0]):
+            for col in range(1, self._align_matrix.shape[1]):
+
+                max_align = self._max_step_align(row, col)
+                self._align_matrix[row, col] = self.sub_dict[(seqA[row-1], seqB[col-1])] + max_align[0]
+                self._back = max_align[1], max_align[2] # store the matrix and the element
+
+                max_gapA = self._max_step_gapA(row, col)
+                self._gapA_matrix[row, col] = max_gapA[0]
+                self._back_A = max_gapA[1], max_gapA[2]
+
+                max_gapB = self._max_step_gapB(row, col)
+                self._gapB_matrix[row, col] = max_gapB[0]
+                self._back_B = max_gapB[1], max_gapB[2]
 
         return self._backtrace()
+
+    def _get_max(self, align: int, gapA: int, gapB, i: int, j: int) -> Tuple:
+        """
+        Helper method for filling in matrices. Gets max of three elements, and returns the matrix (and coordinates)
+        containing the max value.
+
+        Parameters:
+            align: int
+                Alignment option
+            gapA: int
+                GapA option
+            gapB: int
+                GapB option
+            i: int
+                Current row
+            j: int
+                Current column
+
+        Return:
+            Tuple
+                Maximum element from above
+                Which element contained max element {0: align, 1: gapA, 2: gapB}
+                Which entry in the element contained the max element
+
+        """
+        if align > gapA and align > gapB:
+            return (align, 0, (i-1, j-1))
+        elif gapA > align and gapA > gapB:
+            return (gapA, 1, (i-1, j-1))
+        return (gapB, 2, (i-1, j-1))
+
+    def _max_step_align(self, i: int, j: int) -> Tuple:
+        """
+        Helper method for filling in M[i,j], ie calculates
+            -----------
+            | M[i-1, j-1]
+        max | gapA[i-1, j-1]
+            | gapB[i-1, j-1]
+            -----------
+        It also returns which matrix and which element within the matrix contained the maximum element, for back tracing.
+
+        Parameters:
+            i: int
+                Current row of iteration
+            j: int
+                Current column of iteration
+
+        Returns:
+            Tuple
+                Maximum element from above
+                Which element contained max element {0: align, 1: gapA, 2: gapB}
+                Which entry in the element contained the max element
+        """
+        align = self._align_matrix[i-1, j-1]
+        gapA = self._gapA_matrix[i-1, j-1]
+        gapB = self._gapB_matrix[i-1, j-1]
+
+        return self._get_max(align, gapA, gapB, i, j)
+
+    def _max_step_gapA(self, i: int, j: int) -> Tuple:
+        """
+        Helper method for filling in gapA[i,j], ie calculates
+            -----------
+            | gap_start + gap_extent + M[i, j-1]
+        max | gap_extend + gapA[i, j-1]
+            | gap_start + gap_extend + gapB[i, j-1]
+            -----------
+        It also returns which matrix and which element within the matrix contained the maximum element, for back tracing.
+
+        Parameters:
+            i: int
+                Current row of iteration
+            j: int
+                Current column of iteration
+
+        Returns:
+            Tuple
+                Maximum element from above
+                Which element contained max element {0: align, 1: gapA, 2: gapB}
+                Which entry in the element contained the max element
+        """
+        align = self.gap_open + self.gap_extend + self._align_matrix[i, j-1]
+        gapA = self.gap_extend + self._gapA_matrix[i, j-1]
+        gapB = self.gap_open + self.gap_extend + self._gapB_matrix[i, j-1]
+
+        return self._get_max(align, gapA, gapB, i, j)
+
+    def _max_step_gapB(self, i: int, j: int) -> Tuple:
+        """
+        Helper method for filling in gapB[i,j], ie calculates
+            -----------
+            | gap_start + gap_extent + M[i-1, j]
+        max | gap_start + gap_extend + gapA[i-1, j]
+            | gap_extend + gapB[i-1, j]
+            -----------
+        It also returns which matrix and which element within the matrix contained the maximum element, for back tracing.
+
+        Parameters:
+            i: int
+                Current row of iteration
+            j: int
+                Current column of iteration
+
+        Returns:
+            Tuple
+                Maximum element from above
+                Which element contained max element {0: align, 1: gapA, 2: gapB}
+                Which entry in the element contained the max element
+        """
+        align = self.gap_open + self.gap_extend + self._align_matrix[i-1, j]
+        gapA = self.gap_open + self.gap_extend + self._gapA_matrix[i-1, j]
+        gapB = self.gap_extend + self._gapB_matrix[i-1, j]
+
+        return self._get_max(align, gapA, gapB, i, j)
+
 
     def _backtrace(self) -> Tuple[float, str, str]:
         """
