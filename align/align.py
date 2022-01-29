@@ -181,8 +181,9 @@ class NeedlemanWunsch:
         align = self._align_matrix[i-1, j-1]
         gapA = self._gapA_matrix[i-1, j-1]
         gapB = self._gapB_matrix[i-1, j-1]
+        opts = [align, gapA, gapB]
 
-        return self._get_max(align, gapA, gapB, i, j)
+        return opts[np.argmax(opts)], np.argmax(opts)
 
     def _max_step_gapA(self, i: int, j: int) -> Tuple:
         """
@@ -209,8 +210,9 @@ class NeedlemanWunsch:
         align = self.gap_open + self.gap_extend + self._align_matrix[i, j-1]
         gapA = self.gap_extend + self._gapA_matrix[i, j-1]
         gapB = self.gap_open + self.gap_extend + self._gapB_matrix[i, j-1]
+        opts = [align, gapA, gapB]
 
-        return self._get_max(align, gapA, gapB, i, j)
+        return opts[np.argmax(opts)], np.argmax(opts)
 
     def _max_step_gapB(self, i: int, j: int) -> Tuple:
         """
@@ -235,37 +237,10 @@ class NeedlemanWunsch:
         """
         align = self.gap_open + self.gap_extend + self._align_matrix[i-1, j]
         gapA = self.gap_open + self.gap_extend + self._gapA_matrix[i-1, j]
-        gapB = self.gap_extend + self._gapB_matrix[i-1, j]
+        gapB = self.gap_extend + self._gapB_matrix[i - 1, j]
+        opts = [align, gapA, gapB]
 
-        return self._get_max(align, gapA, gapB, i, j)
-
-    def _get_max(self, align: int, gapA: int, gapB, i: int, j: int) -> Tuple:
-        """
-        Helper method for filling in matrices. Gets max of three elements, and returns the matrix number
-        (see `self._back_dict`).
-
-        Parameters:
-            align: int
-                Alignment option
-            gapA: int
-                GapA option
-            gapB: int
-                GapB option
-            i: int
-                Current row
-            j: int
-                Current column
-
-        Return:
-            Tuple
-                Maximum element from above
-                Which matrix contained max element {0: align, 1: gapA, 2: gapB}
-        """
-        if align > gapA and align > gapB:
-            return (align, 0)
-        elif gapA > gapB:
-            return (gapA, 1)
-        return (gapB, 2)
+        return opts[np.argmax(opts)], np.argmax(opts)
 
     def _backtrace(self) -> Tuple[float, str, str]:
         """
@@ -288,9 +263,10 @@ class NeedlemanWunsch:
         gapB_val = self._gapB_matrix[curr_row, curr_col]
 
         # find out which matrix had the max value, keep track of that matrix
-        if align_val > gapA_val and align_val > gapB_val:
+        # tie breaks in order of preference are (a) align, (b), gapA, then (c) gapB. 
+        if align_val >= gapA_val and align_val >= gapB_val:
             curr_mat = 0
-        elif gapA_val > gapB_val:
+        elif gapA_val >= gapB_val:
             curr_mat = 1
         else:
             curr_mat = 2
