@@ -1,3 +1,5 @@
+![BuildStatus](https://github.com/ggoldman1/Project4/actions/workflows/pylint.yml/badge.svg)
+
 # Project 4
 Needleman Wunsch Algorithm
 
