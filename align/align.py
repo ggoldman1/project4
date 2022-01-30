@@ -109,6 +109,13 @@ class NeedlemanWunsch:
             seqB: str
                 This is the second sequence we consider when aligning
         """
+        # ensure both sequences only contain letters in the alphabet -- in this case, the letters in the
+        # substitution matrix
+        alphabet = set(np.array([[k[0], k[1]] for k in nw.sub_dict.keys()]).flatten())
+        for l in seqA + seqB:
+            if l not in alphabet:
+                raise ValueError(f"Your sequence has a letter ({l}) that is not found in the substitution matrix")
+
         # Initialize 6 matrix private attributes for use in alignment
         # create matrices for alignment scores and gaps
         self._align_matrix = np.ones((len(seqA) + 1, len(seqB) + 1)) * -np.inf
