@@ -15,14 +15,25 @@ def test_nw_alignment():
     seq1, _ = read_fasta("./data/test_seq1.fa")
     seq2, _ = read_fasta("./data/test_seq2.fa")
 
-    nw = NeedlemanWunsch("./substitution_matrices/BLOSUM62.mat", -10, -1)
-    assert nw.align(seq1, seq2) == (4.0, 'MYQR', 'M-QR')
+    assert nw.align(seq1, seq2) == (4.0, 'MYQR', 'M-QR'), "alignment score and/or alignment is wrong"
 
-    align_mat = nw._align_matrix == [[0., -np.inf, -np.inf, -np.inf],
-                                     [-np.inf,   5., -12., -14.],
-                                     [-np.inf, -13.,   4.,  -8.],
-                                     [-np.inf, -13.,  -1.,   5.],
-                                     [-np.inf, -15.,  -6.,   4.]]
+for r in range(1, nw._align_matrix.shape[0]):
+    for c in range(1, nw._align_matrix.shape[1]):
+        assert nw._align_matrix[r,c] == max(
+            nw._align_matrix[r-1, c-1],
+            nw._gapA_matrix[r-1, c-1],
+            nw._gapB_matrix[r-1, c-1]
+        ) + nw.sub_dict[(seq1[r-1], seq2[c-1])], "alignment matrix has incorrect values"
+
+        assert nw._gapA_matrix[r,c] == max(
+            nw.gap_open + nw.gap_extend + nw._align_matrix[r, c-1],
+            nw.gap_extend + nw._gapA_matrix[r, c-1],
+            nw.gap_open + nw.gap_extend + nw._gapB_matrix[r, c-1]
+        )
+
+
+
+
     assert np.all(align_mat)
 
     gapA = nw._gapA_matrix == [[-11., -np.inf, -np.inf, -np.inf],

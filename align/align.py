@@ -136,8 +136,8 @@ class NeedlemanWunsch:
         #### NEEDLEMAN-WUNSCH IMPLEMENTATION ####
         # Begin with base cases
         self._align_matrix[0,0] = 0
-        self._gapA_matrix[:,0] = [self.gap_open + (i+1)*self.gap_extend for i in range(len(seqA) + 1)]
-        self._gapB_matrix[0,:] = [self.gap_open + (i+1)*self.gap_extend for i in range(len(seqB) + 1)]
+        self._gapA_matrix[:,0] = [self.gap_open + i*self.gap_extend for i in range(len(seqA) + 1)]
+        self._gapB_matrix[0,:] = [self.gap_open + i*self.gap_extend for i in range(len(seqB) + 1)]
 
         # Now, fill in the "interior" of each matrix
         for row in range(1, self._align_matrix.shape[0]):
@@ -207,9 +207,9 @@ class NeedlemanWunsch:
                 Maximum element from above
                 Which matrix contained max element {0: align, 1: gapA, 2: gapB}
         """
-        align = self.gap_open + self.gap_extend + self._align_matrix[i, j-1]
-        gapA = self.gap_extend + self._gapA_matrix[i, j-1]
-        gapB = self.gap_open + self.gap_extend + self._gapB_matrix[i, j-1]
+        align = self.gap_open + self.gap_extend + self._align_matrix[i-1, j]
+        gapA = self.gap_extend + self._gapA_matrix[i-1, j]
+        gapB = self.gap_open + self.gap_extend + self._gapB_matrix[i-1, j]
         opts = [align, gapA, gapB]
 
         return opts[np.argmax(opts)], np.argmax(opts)
@@ -235,9 +235,9 @@ class NeedlemanWunsch:
                 Maximum element from above
                 Which matrix contained max element {0: align, 1: gapA, 2: gapB}
         """
-        align = self.gap_open + self.gap_extend + self._align_matrix[i-1, j]
-        gapA = self.gap_open + self.gap_extend + self._gapA_matrix[i-1, j]
-        gapB = self.gap_extend + self._gapB_matrix[i - 1, j]
+        align = self.gap_open + self.gap_extend + self._align_matrix[i, j-1]
+        gapA = self.gap_open + self.gap_extend + self._gapA_matrix[i, j-1]
+        gapB = self.gap_extend + self._gapB_matrix[i, j-1]
         opts = [align, gapA, gapB]
 
         return opts[np.argmax(opts)], np.argmax(opts)
@@ -303,14 +303,14 @@ class NeedlemanWunsch:
         elif back_mat == 1: # if we are gapping sequence A
             self.seqA_align = '-' + self.seqA_align # add a gap character to sequence A
             self.seqB_align = self._seqB[j-1] + self.seqB_align # add letter to sequence B
-            # return the previous matrix (stored in gapA), move up one row
-            return self._back_dict[1][i,j], i, j-1
+            # return the previous matrix (stored in gapA), move left one col
+            return self._back_dict[1][i,j], i-1, j
 
         # if we are gapping at sequence B
         self.seqA_align = self._seqA[i-1] + self.seqA_align # add letter to sequence A
         self.seqB_align = '-' + self.seqB_align # add a gap character to sequence be
-        # return the previous matrix (stored in gapB), move left one column
-        return self._back_dict[2][i,j], i-1, j
+        # return the previous matrix (stored in gapB), move up one row
+        return self._back_dict[2][i,j], i, j-1
 
 
 def read_fasta(fasta_file: str) -> Tuple[str, str]:
