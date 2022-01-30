@@ -194,6 +194,7 @@ class NeedlemanWunsch:
             | gap_start + gap_extend + gapB[i, j-1]
             -----------
         It also returns which matrix contained the maximum element, for back tracing.
+        The elements we consdier here are ``lef'', ie (i,j-1) with respect to given (i,j).
 
 
         Parameters:
@@ -223,6 +224,7 @@ class NeedlemanWunsch:
             | gap_extend + gapB[i, j-1]
             -----------
         It also returns which matrix contained the maximum element, for back tracing.
+        The elements we consider here are ``up'', ie (i-1, j) with respect to given (i,j)
 
         Parameters:
             i: int
@@ -280,6 +282,9 @@ class NeedlemanWunsch:
         Parameters:
             back_mat: int
                 Either a 0 (align), 1 (gap A), or 2 (gap B)
+                    0 : align, move up diagonally
+                    1: gap in sequence B, consume a letter of A, move up (i-1, j)
+                    2: gap in sequence A, consume a letter of B, move left (i, j-1)
             i: int 
                 Current spot in seq A
             j: int 
@@ -292,7 +297,7 @@ class NeedlemanWunsch:
         if back_mat == 0: # if we are aligning at this step
             self.seqA_align = self._seqA[i-1] + self.seqA_align # add a letter
             self.seqB_align = self._seqB[j-1] + self.seqB_align # add a letter
-            # return the previous matrix (stored in align_mat), move back diagonal
+            # return the previous matrix (stored in align_mat), move according to rule
             nextrow_nextcol = self._back_trace_rule(self._back_dict[0][i, j], i, j)
             return self._back_dict[0][i,j], nextrow_nextcol[0], nextrow_nextcol[1]
 
@@ -310,15 +315,32 @@ class NeedlemanWunsch:
         nextrow_nextcol = self._back_trace_rule(self._back_dict[0][i, j], i, j)
         return self._back_dict[0][i, j], nextrow_nextcol[0], nextrow_nextcol[1]
 
-    def _back_trace_rule(self, back_mat, i, j):
+    def _back_trace_rule(self, back_mat: int, i: int, j: int) -> Tuple[int, int]:
+        """
+        Determine how to move through the alignment matrix based on the next decision (align or gap).
+            0: move up diagonally
+            1: move up (i-1, j)
+            2: move left (i, j-1)
+
+        Parameters:
+            back_mat: int
+                What is the next move (0, 1, or 2?)
+            i: int
+                Current row (ie letter in seqA)
+            j: int
+                Current col (ie letter in seqB)
+
+        Returns:
+            Tuple:
+                Updated i, j based on back_mat
+
+        """
         if back_mat == 0:
             return i-1, j-1
         elif back_mat == 1:
             return i-1, j
         else:
             return i, j-1
-
-
 
 
 def read_fasta(fasta_file: str) -> Tuple[str, str]:
