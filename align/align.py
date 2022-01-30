@@ -295,43 +295,28 @@ class NeedlemanWunsch:
             Tuple
                 Next back mat (either 0, 1, or 2), and updated i and j.
         """
-        print(' ')
-        print(i, j)
-        print(self.seqA_align)
-        print(self.seqB_align)
-        print(back_mat)
         if back_mat == 0: # if we are aligning at this step
             self.seqA_align = self._seqA[i-1] + self.seqA_align # add a letter
             self.seqB_align = self._seqB[j-1] + self.seqB_align # add a letter
-            print('I AM IN 0')
-            print(self.seqA_align)
-            print(self.seqB_align)
-            print(f"next is {self._back_dict[0][i,j]} \n")
             # return the previous matrix (stored in align_mat), move according to rule
             nextrow_nextcol = self._back_trace_rule(self._back_dict[0][i, j], i, j)
             return self._back_dict[0][i,j], nextrow_nextcol[0], nextrow_nextcol[1]
 
-        elif back_mat == 2: # if we are gapping sequence B
-            self.seqA_align = self._seqA[i-1] + self.seqA_align  # add letter to sequence A
-            self.seqB_align = '-' + self.seqB_align  # add a gap character to sequence be
-            print('I AM IN 2')
-            print(self.seqA_align)
-            print(self.seqB_align)
-            print(f"next is {self._back_dict[0][i, j]} \n")
-            # return the previous matrix pointer (stored in gapB), move according to rule
+        elif back_mat == 1: # if we are gapping sequence A
+            # if we are gapping at sequence A
+            self.seqA_align = '-' + self.seqA_align # add a gap character to sequence A
+            self.seqB_align = self._seqB[j-1] + self.seqB_align # add letter to sequence B
+            # return the previous matrix pointer (stored in gapA), move according to rule
             nextrow_nextcol = self._back_trace_rule(self._back_dict[0][i, j], i, j)
-            return self._back_dict[0][i,j], nextrow_nextcol[0], nextrow_nextcol[1]
+            return self._back_dict[0][i, j], nextrow_nextcol[0], nextrow_nextcol[1]
 
-        # if we are gapping at sequence A
-        self.seqA_align = '-' + self.seqA_align # add a gap character to sequence A
-        self.seqB_align = self._seqB[j-1] + self.seqB_align # add letter to sequence B
-        print('I AM IN 1')
-        print(self.seqA_align)
-        print(self.seqB_align)
-        print(f"next is {self._back_dict[0][i, j]} \n")
-        # return the previous matrix pointer (stored in gapA), move according to rule
+        # if we are gapping at sequence B
+        self.seqA_align = self._seqA[i - 1] + self.seqA_align  # add letter to sequence A
+        self.seqB_align = '-' + self.seqB_align  # add a gap character to sequence be
+        # return the previous matrix pointer (stored in gapB), move according to rule
         nextrow_nextcol = self._back_trace_rule(self._back_dict[0][i, j], i, j)
         return self._back_dict[0][i, j], nextrow_nextcol[0], nextrow_nextcol[1]
+
 
     def _back_trace_rule(self, back_mat: int, i: int, j: int) -> Tuple[int, int]:
         """
@@ -339,7 +324,6 @@ class NeedlemanWunsch:
             0: move up diagonally
             1: move left (i, j-1)
             2: move up (i-1, j)
-
 
         Parameters:
             back_mat: int
@@ -352,7 +336,6 @@ class NeedlemanWunsch:
         Returns:
             Tuple:
                 Updated i, j based on back_mat
-
         """
         if back_mat == 0:
             return i-1, j-1
