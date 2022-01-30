@@ -187,6 +187,7 @@ class NeedlemanWunsch:
 
     def _max_step_gapA(self, i: int, j: int) -> Tuple:
         """
+        GAP IN A MOVES TO THE LEFT
         Helper method for filling in gapA[i,j], ie calculates
             -----------
             | gap_start + gap_extend + M[i, j-1]
@@ -216,11 +217,12 @@ class NeedlemanWunsch:
 
     def _max_step_gapB(self, i: int, j: int) -> Tuple:
         """
+        GAP IN B MOVES UP
         Helper method for filling in gapB[i,j], ie calculates
             -----------
-            | gap_start + gap_extend + M[i-1, j]
-        max | gap_start + gap_extend + gapA[i-1, j]
-            | gap_extend + gapB[i-1, j]
+            | gap_start + gap_extend + M[i, j-1]
+        max | gap_start + gap_extend + gapA[i-1, j-1]
+            | gap_extend + gapB[i, j-1]
             -----------
         It also returns which matrix and which element within the matrix contained the maximum element, for back tracing.
 
@@ -290,23 +292,52 @@ class NeedlemanWunsch:
                 Next back mat (either 0, 1, or 2), and updated i and j.
         """
         # import pdb; pdb.set_trace()
+        print(i, j)
+        print(self.seqA_align)
+        print(self.seqB_align)
+        print(back_mat)
+
         if back_mat == 0: # if we are aligning at this step
             self.seqA_align = self._seqA[i-1] + self.seqA_align # add a letter
             self.seqB_align = self._seqB[j-1] + self.seqB_align # add a letter
+            print('I AM IN 0')
+            print(self.seqA_align)
+            print(self.seqB_align)
             # return the previous matrix (stored in align_mat), move back diagonal
-            return self._back_dict[0][i,j], i-1, j-1
+            print(f"next is {self._back_dict[0][i,j]} \n")
+            nextrow_nextcol = self._back_trace_rule(self._back_dict[0][i, j], i, j)
+            return self._back_dict[0][i,j], nextrow_nextcol[0], nextrow_nextcol[1]
 
-        elif back_mat == 1: # if we are gapping sequence B
-            self.seqA_align = self._seqA[i - 1] + self.seqA_align  # add letter to sequence A
+        elif back_mat == 1.0: # if we are gapping sequence B
+            self.seqA_align = self._seqA[i-1] + self.seqA_align  # add letter to sequence A
             self.seqB_align = '-' + self.seqB_align  # add a gap character to sequence be
+            print('I AM IN 1')
+            print(self.seqA_align)
+            print(self.seqB_align)
             # return the previous matrix (stored in gapB), move up one row
-            return self._back_dict[1][i, j], i - 1, j
+            print(f"next is {self._back_dict[0][i, j]} \n")
+            nextrow_nextcol = self._back_trace_rule(self._back_dict[0][i, j], i, j)
+            return self._back_dict[0][i,j], nextrow_nextcol[0], nextrow_nextcol[1]
 
         # if we are gapping at sequence A
         self.seqA_align = '-' + self.seqA_align # add a gap character to sequence A
         self.seqB_align = self._seqB[j-1] + self.seqB_align # add letter to sequence B
+        print('I AM IN 2')
+        print(self.seqA_align)
+        print(self.seqB_align)
         # return the previous matrix (stored in gapA), move left one col
-        return self._back_dict[2][i,j], i, j-1
+        print(f"next is {self._back_dict[0][i, j]} \n")
+        nextrow_nextcol = self._back_trace_rule(self._back_dict[0][i, j], i, j)
+        return self._back_dict[0][i, j], nextrow_nextcol[0], nextrow_nextcol[1]
+
+    def _back_trace_rule(self, back_mat, i, j):
+        if back_mat == 0:
+            return i-1, j-1
+        elif back_mat == 1:
+            return i-1, j
+        else:
+            return i, j-1
+
 
 
 
