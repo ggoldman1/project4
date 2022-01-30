@@ -15,10 +15,7 @@ def test_nw_alignment():
     seq1, _ = read_fasta("./data/test_seq1.fa")
     seq2, _ = read_fasta("./data/test_seq2.fa")
 
-nw = NeedlemanWunsch("./substitution_matrices/BLOSUM62.mat", -10, -1)
-nw.sub_dict = {k:1 if k[0] == k[1] else -1 for k in nw.sub_dict.keys()}
-nw.gap_open = -3
-    nw.align(seq1, seq2)
+    nw = NeedlemanWunsch("./substitution_matrices/BLOSUM62.mat", -10, -1)
     assert nw.align(seq1, seq2) == (4.0, 'MYQR', 'M-QR'), "alignment score and/or alignment is wrong"
 
     for r in range(1, nw._align_matrix.shape[0]):
@@ -33,26 +30,11 @@ nw.gap_open = -3
                 nw.gap_extend + nw._gapA_matrix[r, c-1],
                 nw.gap_open + nw.gap_extend + nw._gapB_matrix[r, c-1]
             )
-
-
-
-
-    assert np.all(align_mat)
-
-    gapA = nw._gapA_matrix == [[-11., -np.inf, -np.inf, -np.inf],
-                               [-12., -13., -6., -7.],
-                               [-13., -14., -15., -7.],
-                               [-14., -15., -16., -12.],
-                               [-15., -16., -17., -17.]]
-    assert np.all(gapA)
-
-    gapB = nw._gapB_matrix == [[-11., -12., -13., -14.],
-                               [-np.inf, -13., -14., -15.],
-                               [-np.inf,  -6., -15., -16.],
-                               [-np.inf,  -7.,  -7., -17.],
-                               [-np.inf,  -8.,  -8.,  -6.]]
-    assert np.all(gapB)
-
+            assert nw._gapB_matrix[r,c] == max(
+                nw.gap_open + nw.gap_extend + nw._align_matrix[r-1, c],
+                nw.gap_open + nw.gap_extend + nw._gapA_matrix[r-1, c],
+                nw.gap_extend + nw._gapB_matrix[r-1, c]
+            )
 
 def test_nw_backtrace():
     """
@@ -64,7 +46,27 @@ def test_nw_backtrace():
     """
     seq3, _ = read_fasta("./data/test_seq3.fa")
     seq4, _ = read_fasta("./data/test_seq4.fa")
-    pass
+
+    nw = NeedlemanWunsch("./substitution_matrices/BLOSUM62.mat", -10, -1)
+    assert nw.align(seq3, seq4) == (17.0, 'MAVHQLIRRP', 'M---QLIRHP')
+
+    for r in range(1, nw._align_matrix.shape[0]):
+        for c in range(1, nw._align_matrix.shape[1]):
+            assert nw._back[r,c] == np.argmax(
+                [nw._align_matrix[r-1, c-1],
+                nw._gapA_matrix[r-1, c-1],
+                nw._gapB_matrix[r-1, c-1]]
+            )
+            assert nw._back_A[r,c] == np.argmax(
+                [nw.gap_open + nw.gap_extend + nw._align_matrix[r, c-1],
+                nw.gap_extend + nw._gapA_matrix[r, c-1],
+                nw.gap_open + nw.gap_extend + nw._gapB_matrix[r, c-1]]
+            )
+            assert nw._back_B[r,c] == np.argmax(
+                [nw.gap_open + nw.gap_extend + nw._align_matrix[r-1, c],
+                nw.gap_open + nw.gap_extend + nw._gapA_matrix[r-1, c],
+                nw.gap_extend + nw._gapB_matrix[r-1, c]]
+            )
 
 
 
