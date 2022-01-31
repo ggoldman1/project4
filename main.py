@@ -18,7 +18,7 @@ def main():
     score_against_hs = {}
     nw = NeedlemanWunsch("./substitution_matrices/BLOSUM62.mat", -10, -1)
     for seq, species in zip([gg_seq, mm_seq, br_seq, tt_seq], ["Gallus gallus", "Mus musculus",
-                                                               "Balaencipes rex", "Tursiops truncatus"]):
+                                                               "Balaeniceps rex", "Tursiops truncatus"]):
         score_against_hs[species] = nw.align(hs_seq, seq)[0]
     # sort species so highest scorer goes first 
     score_against_hs_sorted = {k: v for k, v in sorted(score_against_hs.items(),

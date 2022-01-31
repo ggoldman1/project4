@@ -201,7 +201,7 @@ class NeedlemanWunsch:
             | gap_start + gap_extend + gapB[i, j-1]
             -----------
         It also returns which matrix contained the maximum element, for back tracing.
-        The elements we consdier here are ``lef'', ie (i,j-1) with respect to given (i,j).
+        The elements we consider here are ``left'', ie (i,j-1) with respect to given (i,j).
 
 
         Parameters:
