@@ -111,7 +111,7 @@ class NeedlemanWunsch:
         """
         # ensure both sequences only contain letters in the alphabet -- in this case, the letters in the
         # substitution matrix
-        alphabet = set(np.array([[k[0], k[1]] for k in nw.sub_dict.keys()]).flatten())
+        alphabet = set(np.array([[k[0], k[1]] for k in self.sub_dict.keys()]).flatten())
         for l in seqA + seqB:
             if l not in alphabet:
                 raise ValueError(f"Your sequence has a letter ({l}) that is not found in the substitution matrix")
