@@ -18,23 +18,23 @@ def test_nw_alignment():
     nw = NeedlemanWunsch("./substitution_matrices/BLOSUM62.mat", -10, -1)
     assert nw.align(seq1, seq2) == (4.0, 'MYQR', 'M-QR'), "alignment score and/or alignment is wrong"
 
-    for r in range(1, nw._align_matrix.shape[0]):
-        for c in range(1, nw._align_matrix.shape[1]):
-            assert nw._align_matrix[r,c] == max(
-                nw._align_matrix[r-1, c-1],
-                nw._gapA_matrix[r-1, c-1],
-                nw._gapB_matrix[r-1, c-1]
-            ) + nw.sub_dict[(seq1[r-1], seq2[c-1])], "alignment matrix has incorrect values"
-            assert nw._gapA_matrix[r,c] == max(
-                nw.gap_open + nw.gap_extend + nw._align_matrix[r, c-1],
-                nw.gap_extend + nw._gapA_matrix[r, c-1],
-                nw.gap_open + nw.gap_extend + nw._gapB_matrix[r, c-1]
-            ), "gap A matrix has incorrect values"
-            assert nw._gapB_matrix[r,c] == max(
-                nw.gap_open + nw.gap_extend + nw._align_matrix[r-1, c],
-                nw.gap_open + nw.gap_extend + nw._gapA_matrix[r-1, c],
-                nw.gap_extend + nw._gapB_matrix[r-1, c]
-            ), "gap B matrix has incorrect values"
+    assert np.all(nw._align_matrix == [[  0., -np.inf, -np.inf, -np.inf],
+                                       [-np.inf,   5., -11., -13.],
+                                       [-np.inf, -12.,   4.,  -8.],
+                                       [-np.inf, -12.,  -1.,   5.],
+                                       [-np.inf, -14.,  -6.,   4.]])
+
+    assert np.all(nw._gapA_matrix == [[-10., -np.inf, -np.inf, -np.inf],
+                                      [-11., -12.,  -6.,  -7.],
+                                      [-12., -13., -14.,  -7.],
+                                      [-13., -14., -15., -12.],
+                                      [-14., -15., -16., -17.]])
+
+    assert np.all(nw._gapB_matrix == [[-10., -11., -12., -13.],
+                                      [-np.inf, -12., -13., -14.],
+                                      [-np.inf,  -6., -14., -15.],
+                                      [-np.inf,  -7.,  -7., -16.],
+                                      [-np.inf,  -8.,  -8.,  -6.]])
 
 def test_nw_backtrace():
     """
@@ -50,23 +50,41 @@ def test_nw_backtrace():
     nw = NeedlemanWunsch("./substitution_matrices/BLOSUM62.mat", -10, -1)
     assert nw.align(seq3, seq4) == (17.0, 'MAVHQLIRRP', 'M---QLIRHP')
 
-    for r in range(1, nw._align_matrix.shape[0]):
-        for c in range(1, nw._align_matrix.shape[1]):
-            assert nw._back[r,c] == np.argmax(
-                [nw._align_matrix[r-1, c-1],
-                nw._gapA_matrix[r-1, c-1],
-                nw._gapB_matrix[r-1, c-1]]
-            ), "back alignment matrix has incorrect values"
-            assert nw._back_A[r,c] == np.argmax(
-                [nw.gap_open + nw.gap_extend + nw._align_matrix[r, c-1],
-                nw.gap_extend + nw._gapA_matrix[r, c-1],
-                nw.gap_open + nw.gap_extend + nw._gapB_matrix[r, c-1]]
-            ), "back gap A matrix has incorrect values"
-            assert nw._back_B[r,c] == np.argmax(
-                [nw.gap_open + nw.gap_extend + nw._align_matrix[r-1, c],
-                nw.gap_open + nw.gap_extend + nw._gapA_matrix[r-1, c],
-                nw.gap_extend + nw._gapB_matrix[r-1, c]]
-            ), "back gap B matrix has incorrect values"
+    assert np.all(nw._back == [[-np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf],
+                               [-np.inf,   0.,   2.,   2.,   2.,   2.,   2.,   2.],
+                               [-np.inf,   1.,   0.,   1.,   1.,   1.,   1.,   1.],
+                               [-np.inf,   1.,   2.,   0.,   0.,   0.,   0.,   1.],
+                               [-np.inf,   1.,   2.,   2.,   0.,   0.,   1.,   1.],
+                               [-np.inf,   1.,   2.,   0.,   2.,   0.,   0.,   0.],
+                               [-np.inf,   1.,   2.,   0.,   2.,   0.,   0.,   0.],
+                               [-np.inf,   1.,   2.,   2.,   0.,   0.,   2.,   0.],
+                               [-np.inf,   1.,   2.,   2.,   0.,   0.,   1.,   1.],
+                               [-np.inf,   1.,   2.,   0.,   2.,   2.,   0.,   1.],
+                               [-np.inf,   1.,   2.,   0.,   2.,   2.,   0.,   0.]])
+
+    assert np.all(nw._back_A == [[-np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf],
+                                 [-np.inf,   1.,   0.,   1.,   1.,   1.,   1.,   1.],
+                                 [-np.inf,   1.,   1.,   0.,   1.,   1.,   1.,   1.],
+                                 [-np.inf,   1.,   1.,   1.,   0.,   1.,   1.,   1.],
+                                 [-np.inf,   1.,   1.,   1.,   2.,   0.,   1.,   0.],
+                                 [-np.inf,   1.,   1.,   0.,   1.,   1.,   0.,   1.],
+                                 [-np.inf,   1.,   1.,   1.,   0.,   1.,   1.,   0.],
+                                 [-np.inf,   1.,   1.,   1.,   0.,   0.,   1.,   1.],
+                                 [-np.inf,   1.,   1.,   0.,   2.,   2.,   0.,   1.],
+                                 [-np.inf,   1.,   1.,   0.,   2.,   2.,   0.,   0.],
+                                 [-np.inf,   1.,   1.,   1.,   2.,   2.,   2.,   2.]])
+
+    assert np.all(nw._back_B == [[-np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf],
+                                 [-np.inf,   2.,   2.,   2.,   2.,   2.,   2.,   2.],
+                                 [-np.inf,   0.,   2.,   2.,   2.,   2.,   2.,   2.],
+                                 [-np.inf,   2.,   0.,   2.,   2.,   2.,   2.,   2.],
+                                 [-np.inf,   2.,   2.,   0.,   0.,   1.,   1.,   1.],
+                                 [-np.inf,   2.,   2.,   2.,   0.,   0.,   0.,   0.],
+                                 [-np.inf,   2.,   2.,   2.,   2.,   0.,   2.,   0.],
+                                 [-np.inf,   2.,   2.,   2.,   2.,   2.,   0.,   2.],
+                                 [-np.inf,   2.,   2.,   2.,   0.,   2.,   2.,   2.],
+                                 [-np.inf,   2.,   2.,   2.,   2.,   0.,   1.,   1.],
+                                 [-np.inf,   2.,   2.,   2.,   2.,   2.,   0.,   1.]])
 
 
 
