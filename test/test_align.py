@@ -29,12 +29,12 @@ def test_nw_alignment():
                 nw.gap_open + nw.gap_extend + nw._align_matrix[r, c-1],
                 nw.gap_extend + nw._gapA_matrix[r, c-1],
                 nw.gap_open + nw.gap_extend + nw._gapB_matrix[r, c-1]
-            )
+            ), "gap A matrix has incorrect values"
             assert nw._gapB_matrix[r,c] == max(
                 nw.gap_open + nw.gap_extend + nw._align_matrix[r-1, c],
                 nw.gap_open + nw.gap_extend + nw._gapA_matrix[r-1, c],
                 nw.gap_extend + nw._gapB_matrix[r-1, c]
-            )
+            ), "gap B matrix has incorrect values"
 
 def test_nw_backtrace():
     """
@@ -56,17 +56,17 @@ def test_nw_backtrace():
                 [nw._align_matrix[r-1, c-1],
                 nw._gapA_matrix[r-1, c-1],
                 nw._gapB_matrix[r-1, c-1]]
-            )
+            ), "back alignment matrix has incorrect values"
             assert nw._back_A[r,c] == np.argmax(
                 [nw.gap_open + nw.gap_extend + nw._align_matrix[r, c-1],
                 nw.gap_extend + nw._gapA_matrix[r, c-1],
                 nw.gap_open + nw.gap_extend + nw._gapB_matrix[r, c-1]]
-            )
+            ), "back gap A matrix has incorrect values"
             assert nw._back_B[r,c] == np.argmax(
                 [nw.gap_open + nw.gap_extend + nw._align_matrix[r-1, c],
                 nw.gap_open + nw.gap_extend + nw._gapA_matrix[r-1, c],
                 nw.gap_extend + nw._gapB_matrix[r-1, c]]
-            )
+            ), "back gap B matrix has incorrect values"
 
 
 
