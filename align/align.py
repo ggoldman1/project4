@@ -226,9 +226,9 @@ class NeedlemanWunsch:
         """
         Helper method for filling in gapB[i,j], ie calculates
             -----------
-            | gap_start + gap_extend + M[i, j-1]
-        max | gap_start + gap_extend + gapA[i-1, j-1]
-            | gap_extend + gapB[i, j-1]
+            | gap_start + gap_extend + M[i-1, j]
+        max | gap_start + gap_extend + gapA[i-1, j]
+            | gap_extend + gapB[i-1, j]
             -----------
         It also returns which matrix contained the maximum element, for back tracing.
         The elements we consider here are ``up'', ie (i-1, j) with respect to given (i,j)

@@ -17,8 +17,8 @@ def main():
     # using gap opening penalty of -10 and a gap extension penalty of -1 and BLOSUM62 matrix
     score_against_hs = {}
     nw = NeedlemanWunsch("./substitution_matrices/BLOSUM62.mat", -10, -1)
-    for seq, species in zip([gg_seq, mm_seq, br_seq, tt_seq], ["Gallus gallus", "Mus musculus",
-                                                               "Balaeniceps rex", "Tursiops truncatus"]):
+    for seq, species in zip([gg_seq, mm_seq, br_seq, tt_seq],
+                            ["Gallus gallus", "Mus musculus", "Balaeniceps rex", "Tursiops truncatus"]):
         score_against_hs[species] = nw.align(hs_seq, seq)[0]
     # sort species so highest scorer goes first 
     score_against_hs_sorted = {k: v for k, v in sorted(score_against_hs.items(),
